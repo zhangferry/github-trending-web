@@ -33,7 +33,7 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
     console.log('GitHub API Query:', query);
     
     const response = await fetch(
-      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc`,
+      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=50`,
       {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
