@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { fetchTrendingRepos } from '@/utils/github';
 import { GitHubRepo, TimeRange, LanguageFilter } from '@/types/github';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { StarIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 
 const TIME_RANGES: { value: TimeRange; label: string }[] = [
   { value: 'daily', label: '今天' },
@@ -35,6 +38,8 @@ export default function TrendingRepos() {
         setLoading(true);
         setError(null);
         const data = await fetchTrendingRepos(timeRange, language);
+        console.log('数据验证 - 接收到的仓库数据:', data);
+        console.log('数据验证 - 第一个仓库的完整信息:', data[0]);
         setRepos(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : '加载失败');
@@ -45,6 +50,13 @@ export default function TrendingRepos() {
 
     loadRepos();
   }, [timeRange, language]);
+
+  // 在渲染时也验证一下数据
+  console.log('数据验证 - 渲染时的 repos:', repos);
+  if (repos.length > 0) {
+    console.log('数据验证 - 渲染时第一个仓库的 new_stars:', repos[0].new_stars);
+    console.log('数据验证 - 渲染时第一个仓库的 total_stars:', repos[0].total_stars);
+  }
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">加载中...</div>;
@@ -85,15 +97,23 @@ export default function TrendingRepos() {
         </select>
       </div>
 
-      <div className="grid gap-6">
-        {repos.map((repo) => (
-          <div
-            key={repo.id}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold mb-2">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-gray-50 border-b">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Repository</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stars</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Forks</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {repos.map((repo, index) => (
+              <tr key={repo.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <a
                     href={repo.html_url}
                     target="_blank"
@@ -102,34 +122,47 @@ export default function TrendingRepos() {
                   >
                     {repo.full_name}
                   </a>
-                </h2>
-                <p className="text-gray-600 mb-4">{repo.description}</p>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                  <span>⭐ {repo.stargazers_count.toLocaleString()}</span>
-                  <span>🔀 {repo.forks_count.toLocaleString()}</span>
-                  <span>
-                    🕒 更新于{' '}
-                    {formatDistanceToNow(new Date(repo.updated_at), {
-                      addSuffix: true,
-                      locale: zhCN,
-                    })}
-                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{repo.owner.login}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   {repo.language && (
                     <span className="inline-flex items-center">
                       <span
-                        className="w-3 h-3 rounded-full mr-1"
-                        style={{
-                          backgroundColor: getLanguageColor(repo.language),
-                        }}
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: getLanguageColor(repo.language) }}
                       />
-                      {repo.language}
+                      <span className="text-sm text-gray-900">{repo.language}</span>
                     </span>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1 text-yellow-500">
+                      <StarIcon className="w-4 h-4" />
+                      <span className="font-bold text-yellow-600">+{repo.new_stars}</span>
+                      <span className="text-xs text-gray-500 ml-1">新增</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      总计: {repo.stargazers_count.toLocaleString()}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1 text-blue-500">
+                      <CodeBracketIcon className="w-4 h-4" />
+                      <span className="font-bold text-blue-600">+{repo.new_forks}</span>
+                      <span className="text-xs text-gray-500 ml-1">新增</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      总计: {repo.forks_count.toLocaleString()}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

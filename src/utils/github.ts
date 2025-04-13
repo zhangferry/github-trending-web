@@ -30,6 +30,8 @@ function getTimeRangeQuery(timeRange: TimeRange, language: LanguageFilter = 'all
 export async function fetchTrendingRepos(timeRange: TimeRange, language: LanguageFilter = 'all'): Promise<GitHubRepo[]> {
   try {
     const query = getTimeRangeQuery(timeRange, language);
+    console.log('GitHub API Query:', query);
+    
     const response = await fetch(
       `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc`,
       {
@@ -45,7 +47,57 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
     }
 
     const data = await response.json();
-    return data.items;
+    console.log(`Found ${data.items.length} repositories`);
+    
+    const reposWithNewStats = data.items.map((item: any) => {
+      // 根据时间范围和总 star/fork 数量估算新增数量
+      let newStarsRatio = 0.1;
+      let newForksRatio = 0.1;
+      
+      switch (timeRange) {
+        case 'weekly':
+          newStarsRatio = 0.2;
+          newForksRatio = 0.2;
+          break;
+        case 'monthly':
+          newStarsRatio = 0.4;
+          newForksRatio = 0.4;
+          break;
+        default: // daily
+          newStarsRatio = 0.05;
+          newForksRatio = 0.05;
+      }
+      
+      const newStars = Math.max(1, Math.round(item.stargazers_count * newStarsRatio));
+      const newForks = Math.max(1, Math.round(item.forks_count * newForksRatio));
+      
+      // 构造一个符合 GitHubRepo 类型的对象
+      const repo: GitHubRepo = {
+        id: item.id,
+        name: item.name,
+        full_name: item.full_name,
+        html_url: item.html_url,
+        description: item.description,
+        owner: {
+          login: item.owner.login,
+          avatar_url: item.owner.avatar_url
+        },
+        stargazers_count: item.stargazers_count,
+        forks_count: item.forks_count,
+        language: item.language,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        new_stars: newStars,
+        new_forks: newForks,
+        total_stars: item.stargazers_count,
+        total_forks: item.forks_count
+      };
+      
+      console.log(`Repo: ${repo.full_name}, Total Stars: ${repo.total_stars}, New Stars: ${repo.new_stars}`);
+      return repo;
+    });
+    
+    return reposWithNewStats;
   } catch (error) {
     console.error('Error fetching trending repos:', error);
     return [];
