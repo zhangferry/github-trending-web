@@ -6,6 +6,8 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 // 如果你有 GitHub 个人访问令牌，可以在这里添加
 const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
 
+console.log('GitHub Token available:', !!GITHUB_TOKEN);
+
 function getTimeRangeQuery(timeRange: TimeRange, language: LanguageFilter = 'all'): string {
   const now = new Date();
   let dateQuery: string;
@@ -30,20 +32,22 @@ function getTimeRangeQuery(timeRange: TimeRange, language: LanguageFilter = 'all
 export async function fetchTrendingRepos(timeRange: TimeRange, language: LanguageFilter = 'all'): Promise<GitHubRepo[]> {
   try {
     const query = getTimeRangeQuery(timeRange, language);
-    console.log('GitHub API Query:', query);
+    const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=50`;
+    console.log('Fetching from URL:', url);
     
-    const response = await fetch(
-      `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=50`,
-      {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          ...(GITHUB_TOKEN ? { 'Authorization': `Bearer ${GITHUB_TOKEN}` } : {})
-        }
-      }
-    );
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      ...(GITHUB_TOKEN ? { 'Authorization': `Bearer ${GITHUB_TOKEN}` } : {})
+    };
+    console.log('Request headers:', headers);
 
+    const response = await fetch(url, { headers });
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -100,7 +104,10 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
     return reposWithNewStats;
   } catch (error) {
     console.error('Error fetching trending repos:', error);
-    return [];
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to fetch trending repositories. Please check your network connection and try again.');
   }
 }
 
