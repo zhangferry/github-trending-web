@@ -113,7 +113,7 @@ export default function LanguageTrend({ repos, language }: LanguageTrendProps) {
               formatter: (value: number) => formatNumber(value)
             }}
           >
-            {chartData.map((entry, index) => (
+            {chartData.map((entry) => (
               <Cell key={entry.name} fill={entry.color} />
             ))}
           </Bar>
