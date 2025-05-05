@@ -1,8 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub Trending
 
-## Getting Started
+一个使用 Next.js 构建的 GitHub Trending 项目，用于展示 GitHub 上最热门的仓库和开发者。
 
-First, run the development server:
+## 功能特点
+
+- 📊 展示 GitHub 热门仓库
+- 👥 展示 GitHub 热门开发者
+- 🔍 支持按语言筛选
+- 📱 响应式设计，支持移动端
+- 🌙 支持深色模式
+- ⚡ 使用 Next.js App Router 构建
+- 🎨 使用 Tailwind CSS 构建现代化 UI
+
+## 技术栈
+
+- [Next.js 14](https://nextjs.org/) - React 框架
+- [TypeScript](https://www.typescriptlang.org/) - 类型安全
+- [Tailwind CSS](https://tailwindcss.com/) - 样式框架
+- [SWR](https://swr.vercel.app/) - 数据获取
+- [Vercel](https://vercel.com) - 部署平台
+
+## 开始使用
+
+1. 克隆项目
+
+```bash
+git clone https://github.com/yourusername/github-trending.git
+cd github-trending
+```
+
+2. 安装依赖
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. 运行开发服务器
 
 ```bash
 npm run dev
@@ -10,27 +47,25 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. 打开 [http://localhost:3000](http://localhost:3000) 查看结果
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 项目结构
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+github-trending/
+├── app/                # Next.js App Router 目录
+├── components/         # React 组件
+├── lib/               # 工具函数和 API
+├── public/            # 静态资源
+└── styles/            # 全局样式
+```
 
-## Learn More
+## 贡献指南
 
-To learn more about Next.js, take a look at the following resources:
+欢迎提交 Pull Request 或创建 Issue 来帮助改进项目。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 许可证
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License
