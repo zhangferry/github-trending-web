@@ -25,6 +25,7 @@ export default function TrendingRepos() {
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<LanguageFilter>('all');
   const [previousRepos, setPreviousRepos] = useState<GitHubRepo[]>([]);
+  const [chartLanguage, setChartLanguage] = useState<LanguageFilter>('all');
 
   useEffect(() => {
     const loadRepos = async () => {
@@ -35,6 +36,7 @@ export default function TrendingRepos() {
         
         const data = await fetchTrendingRepos('weekly', language);
         setRepos(data.slice(0, 50)); // 限制为前50个仓库
+        setChartLanguage(language); // 数据加载完成后更新图表语言
       } catch (err) {
         setError(err instanceof Error ? err.message : '加载失败');
         setRepos(previousRepos);
@@ -66,7 +68,7 @@ export default function TrendingRepos() {
         </select>
       </div>
 
-      <LanguageTrend repos={displayRepos} />
+      <LanguageTrend repos={displayRepos} language={chartLanguage} />
 
       {error && (
         <div className="text-red-400 text-center mb-4">{error}</div>
@@ -88,24 +90,43 @@ export default function TrendingRepos() {
             {displayRepos.map((repo, index) => (
               <tr key={repo.id} className="hover:bg-gray-800">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{index + 1}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <a
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300"
-                  >
-                    {repo.name}
-                  </a>
+                <td className="px-6 py-4">
+                  <div className="flex flex-col">
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      {repo.name}
+                    </a>
+                    {repo.description && (
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{repo.description}</p>
+                    )}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <img
-                      src={repo.owner.avatar_url}
-                      alt={`${repo.owner.login}'s avatar`}
-                      className="w-6 h-6 rounded-full mr-2"
-                    />
-                    <span className="text-sm text-gray-400">{repo.owner.login}</span>
+                <td className="px-6 py-4">
+                  <div className="flex items-center space-x-2">
+                    {repo.contributors.map((contributor, idx) => (
+                      <a
+                        key={idx}
+                        href={`https://github.com/${contributor.login}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative"
+                      >
+                        <div className="w-6 h-6 rounded-full overflow-hidden">
+                          <img
+                            src={contributor.avatar_url}
+                            alt={`${contributor.login}'s avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                          {contributor.login}
+                        </span>
+                      </a>
+                    ))}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -134,10 +155,7 @@ export default function TrendingRepos() {
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1 text-blue-500">
                       <CodeBracketIcon className="w-4 h-4" />
-                      <span className="font-bold text-blue-400">+{repo.new_forks}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      total: {repo.forks_count.toLocaleString()}
+                      <span className="font-bold text-blue-400">{repo.forks_count.toLocaleString()}</span>
                     </div>
                   </div>
                 </td>

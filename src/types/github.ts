@@ -17,6 +17,10 @@ export interface GitHubRepo {
   language: string;
   created_at: string;
   updated_at: string;
+  contributors: Array<{
+    login: string;
+    avatar_url: string;
+  }>;
 }
 
 export interface TrendingData {

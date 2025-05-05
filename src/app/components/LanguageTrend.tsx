@@ -15,62 +15,50 @@ import { GitHubRepo } from '@/types/github';
 
 interface LanguageTrendProps {
   repos: GitHubRepo[];
+  language: string;
 }
 
-interface LanguageStats {
+interface RepoStats {
   name: string;
   stars: number;
-  repos: number;
   color: string;
 }
 
-function getLanguageColor(language: string): string {
-  const colors: { [key: string]: string } = {
-    JavaScript: '#f1e05a',
-    TypeScript: '#3178c6',
-    Python: '#3572A5',
-    Java: '#b07219',
-    Go: '#00ADD8',
-    Rust: '#dea584',
-    'C++': '#f34b7d',
-    C: '#555555',
-    Ruby: '#701516',
-    PHP: '#4F5D95',
-    Swift: '#F05138',
-    Kotlin: '#A97BFF',
-    Dart: '#00B4AB',
-    Vue: '#41b883',
-    HTML: '#e34c26',
-    CSS: '#563d7c',
-  };
-  return colors[language] || '#8b949e';
-}
+export default function LanguageTrend({ repos, language }: LanguageTrendProps) {
+  const chartData = useMemo(() => {
+    if (language === 'all') {
+      // 显示语言趋势
+      const stats = new Map<string, RepoStats>();
 
-export default function LanguageTrend({ repos }: LanguageTrendProps) {
-  const languageStats = useMemo(() => {
-    const stats = new Map<string, LanguageStats>();
+      repos.forEach(repo => {
+        if (!repo.language) return;
 
-    // 统计每种语言的数据
-    repos.forEach(repo => {
-      if (!repo.language) return;
+        const existing = stats.get(repo.language) || {
+          name: repo.language,
+          stars: 0,
+          color: getLanguageColor(repo.language)
+        };
 
-      const existing = stats.get(repo.language) || {
-        name: repo.language,
-        stars: 0,
-        repos: 0,
-        color: getLanguageColor(repo.language)
-      };
+        existing.stars += repo.new_stars;
+        stats.set(repo.language, existing);
+      });
 
-      existing.stars += repo.new_stars;
-      existing.repos += 1;
-      stats.set(repo.language, existing);
-    });
-
-    // 转换为数组并排序
-    return Array.from(stats.values())
-      .sort((a, b) => b.stars - a.stars)
-      .slice(0, 10); // 只取前10种语言
-  }, [repos]);
+      return Array.from(stats.values())
+        .sort((a, b) => b.stars - a.stars)
+        .slice(0, 10);
+    } else {
+      // 显示该语言下仓库的 star 变化
+      return repos
+        .filter(repo => repo.language === language)
+        .map(repo => ({
+          name: repo.name,
+          stars: repo.new_stars,
+          color: getLanguageColor(language)
+        }))
+        .sort((a, b) => b.stars - a.stars)
+        .slice(0, 10);
+    }
+  }, [repos, language]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -81,10 +69,12 @@ export default function LanguageTrend({ repos }: LanguageTrendProps) {
 
   return (
     <div className="w-full h-96 bg-gray-900 rounded-lg p-4 mb-6 border border-gray-700">
-      <h3 className="text-gray-300 text-lg mb-4">Weekly Language Trending</h3>
+      <h3 className="text-gray-300 text-lg mb-4">
+        {language === 'all' ? 'Weekly Language Trending' : `Top 10 ${language} Repositories`}
+      </h3>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={languageStats}
+          data={chartData}
           layout="vertical"
           margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
         >
@@ -109,10 +99,7 @@ export default function LanguageTrend({ repos }: LanguageTrendProps) {
               borderRadius: '0.375rem',
               color: '#D1D5DB'
             }}
-            formatter={(value: number, name: string, props: any) => [
-              `${formatNumber(value)} stars (${props.payload.repos} repos)`,
-              props.payload.name
-            ]}
+            formatter={(value: number) => [`${formatNumber(value)} stars`, '']}
             cursor={{ fill: '#374151', opacity: 0.2 }}
           />
           <Bar
@@ -126,7 +113,7 @@ export default function LanguageTrend({ repos }: LanguageTrendProps) {
               formatter: (value: number) => formatNumber(value)
             }}
           >
-            {languageStats.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={entry.name} fill={entry.color} />
             ))}
           </Bar>
@@ -134,4 +121,26 @@ export default function LanguageTrend({ repos }: LanguageTrendProps) {
       </ResponsiveContainer>
     </div>
   );
+}
+
+function getLanguageColor(language: string): string {
+  const colors: { [key: string]: string } = {
+    JavaScript: '#f1e05a',
+    TypeScript: '#3178c6',
+    Python: '#3572A5',
+    Java: '#b07219',
+    Go: '#00ADD8',
+    Rust: '#dea584',
+    'C++': '#f34b7d',
+    C: '#555555',
+    Ruby: '#701516',
+    PHP: '#4F5D95',
+    Swift: '#F05138',
+    Kotlin: '#A97BFF',
+    Dart: '#00B4AB',
+    Vue: '#41b883',
+    HTML: '#e34c26',
+    CSS: '#563d7c',
+  };
+  return colors[language] || '#8b949e';
 } 

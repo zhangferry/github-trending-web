@@ -31,70 +31,61 @@ function getTimeRangeQuery(timeRange: TimeRange, language: LanguageFilter = 'all
 
 export async function fetchTrendingRepos(timeRange: TimeRange, language: LanguageFilter = 'all'): Promise<GitHubRepo[]> {
   try {
-    const query = getTimeRangeQuery(timeRange, language);
-    const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc&per_page=50`;
-    console.log('Fetching from URL:', url);
+    const targetUrl = new URL('https://github-trending-iota.vercel.app/repo');
+    if (language !== 'all') {
+      targetUrl.searchParams.append('lang', language);
+    }
+    targetUrl.searchParams.append('since', timeRange);
     
-    const headers = {
-      'Accept': 'application/vnd.github.v3+json',
-      ...(GITHUB_TOKEN ? { 'Authorization': `Bearer ${GITHUB_TOKEN}` } : {})
-    };
-    console.log('Request headers:', headers);
-
-    const response = await fetch(url, { headers });
+    // 使用 cors-anywhere 代理
+    const proxyUrl = `https://cors-anywhere.herokuapp.com/${targetUrl.toString()}`;
+    console.log('Fetching from URL:', proxyUrl);
+    
+    const response = await fetch(proxyUrl, {
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
     console.log('Response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Error response:', errorText);
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      throw new Error(`GitHub Trending API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(`Found ${data.items.length} repositories`);
+    console.log(`Found ${data.length} repositories`);
     
-    const reposWithNewStats = data.items.map((item: any) => {
-      // 根据时间范围和总 star/fork 数量估算新增数量
-      let newStarsRatio = 0.1;
-      let newForksRatio = 0.1;
+    const reposWithNewStats = data.map((item: any) => {
+      const repoName = item.repo.split('/').pop();
+      const owner = item.repo.split('/')[1];
       
-      switch (timeRange) {
-        case 'weekly':
-          newStarsRatio = 0.2;
-          newForksRatio = 0.2;
-          break;
-        case 'monthly':
-          newStarsRatio = 0.4;
-          newForksRatio = 0.4;
-          break;
-        default: // daily
-          newStarsRatio = 0.05;
-          newForksRatio = 0.05;
-      }
-      
-      const newStars = Math.max(1, Math.round(item.stargazers_count * newStarsRatio));
-      const newForks = Math.max(1, Math.round(item.forks_count * newForksRatio));
-      
-      // 构造一个符合 GitHubRepo 类型的对象
       const repo: GitHubRepo = {
-        id: item.id,
-        name: item.name,
-        full_name: item.full_name,
-        html_url: item.html_url,
-        description: item.description,
+        id: Math.random(), // 由于API没有提供id，我们生成一个随机id
+        name: repoName,
+        full_name: item.repo,
+        html_url: `https://github.com${item.repo}`,
+        description: item.desc,
         owner: {
-          login: item.owner.login,
-          avatar_url: item.owner.avatar_url
+          login: owner,
+          avatar_url: item.build_by[0].avatar
         },
-        stargazers_count: item.stargazers_count,
-        forks_count: item.forks_count,
-        language: item.language,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        new_stars: newStars,
-        new_forks: newForks,
-        total_stars: item.stargazers_count,
-        total_forks: item.forks_count
+        stargazers_count: item.stars,
+        forks_count: item.forks,
+        language: item.lang,
+        created_at: '', // API没有提供这些信息
+        updated_at: '',
+        new_stars: item.change,
+        new_forks: 0, // API没有提供forks变化信息
+        total_stars: item.stars,
+        total_forks: item.forks,
+        contributors: item.build_by.map((contributor: any) => ({
+          login: contributor.by.split('/')[1],
+          avatar_url: contributor.avatar
+        }))
       };
       
       console.log(`Repo: ${repo.full_name}, Total Stars: ${repo.total_stars}, New Stars: ${repo.new_stars}`);
