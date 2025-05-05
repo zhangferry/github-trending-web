@@ -70,7 +70,7 @@ export default function LanguageTrend({ repos, language }: LanguageTrendProps) {
   return (
     <div className="w-full h-96 bg-gray-900 rounded-lg p-4 mb-6 border border-gray-700">
       <h3 className="text-gray-300 text-lg mb-4">
-        {language === 'all' ? 'Weekly Language Trending' : `Top 10 ${language} Repositories`}
+        {language === 'all' ? 'Language Trending' : `Top 10 ${language} Repositories`}
       </h3>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart

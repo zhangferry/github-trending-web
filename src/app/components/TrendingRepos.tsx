@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchTrendingRepos } from '@/utils/github';
-import { GitHubRepo, LanguageFilter } from '@/types/github';
+import { GitHubRepo, LanguageFilter, TimeRange } from '@/types/github';
 import { StarIcon, CodeBracketIcon } from '@heroicons/react/24/solid';
 import LoadingBar from './LoadingBar';
 import LanguageTrend from './LanguageTrend';
@@ -19,11 +19,18 @@ const LANGUAGES: { value: LanguageFilter; label: string }[] = [
   { value: 'Kotlin', label: 'Kotlin' }
 ];
 
+const TIME_RANGES: { value: TimeRange; label: string }[] = [
+  { value: 'daily', label: 'Today' },
+  { value: 'weekly', label: 'This Week' },
+  { value: 'monthly', label: 'This Month' }
+];
+
 export default function TrendingRepos() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<LanguageFilter>('all');
+  const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
   const [previousRepos, setPreviousRepos] = useState<GitHubRepo[]>([]);
   const [chartLanguage, setChartLanguage] = useState<LanguageFilter>('all');
 
@@ -34,7 +41,7 @@ export default function TrendingRepos() {
         setError(null);
         setPreviousRepos(repos);
         
-        const data = await fetchTrendingRepos('weekly', language);
+        const data = await fetchTrendingRepos(timeRange, language);
         setRepos(data.slice(0, 50)); // 限制为前50个仓库
         setChartLanguage(language); // 数据加载完成后更新图表语言
       } catch (err) {
@@ -46,7 +53,7 @@ export default function TrendingRepos() {
     };
 
     loadRepos();
-  }, [language]);
+  }, [language, timeRange]);
 
   const displayRepos = repos.length > 0 ? repos : previousRepos;
 
@@ -54,7 +61,23 @@ export default function TrendingRepos() {
     <div className="container mx-auto px-4 py-8">
       <LoadingBar isLoading={loading} />
       
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex space-x-1 bg-gray-800 p-1 rounded-lg">
+          {TIME_RANGES.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setTimeRange(value)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                timeRange === value
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value as LanguageFilter)}
