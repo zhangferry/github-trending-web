@@ -1,53 +1,21 @@
 import { GitHubRepo, TrendingData, TimeRange, DeveloperStats, LanguageFilter } from '@/types/github';
-import { subDays, subWeeks, subMonths, format } from 'date-fns';
 
-const CACHE_KEY = 'github_trending_data';
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
-// 如果你有 GitHub 个人访问令牌，可以在这里添加
-const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN || '';
-
-console.log('GitHub Token available:', !!GITHUB_TOKEN);
-
-function getTimeRangeQuery(timeRange: TimeRange, language: LanguageFilter = 'all'): string {
-  const now = new Date();
-  let dateQuery: string;
-  
-  switch (timeRange) {
-    case 'weekly':
-      dateQuery = `pushed:>${format(subWeeks(now, 1), 'yyyy-MM-dd')}`;
-      break;
-    case 'monthly':
-      dateQuery = `pushed:>${format(subMonths(now, 1), 'yyyy-MM-dd')}`;
-      break;
-    default: // daily
-      dateQuery = `pushed:>${format(subDays(now, 1), 'yyyy-MM-dd')}`;
-  }
-
-  const languageQuery = language === 'all' ? '' : `language:${language}`;
-  const baseQuery = 'stars:>1';  // 降低到最低限制
-  
-  return [baseQuery, dateQuery, languageQuery].filter(Boolean).join(' ');
-}
 
 export async function fetchTrendingRepos(timeRange: TimeRange, language: LanguageFilter = 'all'): Promise<GitHubRepo[]> {
   try {
-    const targetUrl = new URL('https://github-trending-iota.vercel.app/repo');
+    const baseUrl = window.location.origin;
+    console.log('Base URL:', baseUrl);
+    
+    const url = new URL('/api/trending', baseUrl);
     if (language !== 'all') {
-      targetUrl.searchParams.append('lang', language);
+      url.searchParams.append('lang', language);
     }
-    targetUrl.searchParams.append('since', timeRange);
+    url.searchParams.append('since', timeRange);
     
-    // 使用 cors-anywhere 代理
-    const proxyUrl = `https://cors-anywhere.herokuapp.com/${targetUrl.toString()}`;
-    console.log('Fetching from URL:', proxyUrl);
+    console.log('Full request URL:', url.toString());
     
-    const response = await fetch(proxyUrl, {
-      mode: 'cors',
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
+    const response = await fetch(url.toString());
     console.log('Response status:', response.status);
     
     if (!response.ok) {
@@ -57,6 +25,7 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
     }
 
     const data = await response.json();
+    console.log('Response data:', data);
     console.log(`Found ${data.length} repositories`);
     
     const reposWithNewStats = data.map((item: any) => {
@@ -64,7 +33,7 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
       const owner = item.repo.split('/')[1];
       
       const repo: GitHubRepo = {
-        id: Math.random(), // 由于API没有提供id，我们生成一个随机id
+        id: Math.random(),
         name: repoName,
         full_name: item.repo,
         html_url: `https://github.com${item.repo}`,
@@ -76,10 +45,10 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
         stargazers_count: item.stars,
         forks_count: item.forks,
         language: item.lang,
-        created_at: '', // API没有提供这些信息
+        created_at: '',
         updated_at: '',
         new_stars: item.change,
-        new_forks: 0, // API没有提供forks变化信息
+        new_forks: 0,
         total_stars: item.stars,
         total_forks: item.forks,
         contributors: item.build_by.map((contributor: any) => ({
@@ -94,11 +63,8 @@ export async function fetchTrendingRepos(timeRange: TimeRange, language: Languag
     
     return reposWithNewStats;
   } catch (error) {
-    console.error('Error fetching trending repos:', error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Failed to fetch trending repositories. Please check your network connection and try again.');
+    console.error('Fetch error:', error);
+    throw error;
   }
 }
 
