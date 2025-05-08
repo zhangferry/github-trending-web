@@ -25,8 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
+        <a
+          href="https://github.com/zhangferry/github-trending-web"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute top-16 right-16 z-10"
+        >
+          <img src="/github-icon.svg" alt="GitHub" width="32" height="32" />
+        </a>
         {children}
       </body>
     </html>
