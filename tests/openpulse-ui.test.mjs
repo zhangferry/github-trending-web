@@ -45,7 +45,7 @@ test('anonymous browsing, five authors, detail navigation, safe excerpts and bac
   assert(requests.every(url => !/^\/api\/(session|auth|star|follow|status)/.test(url.pathname)));
   await page.locator('.breadcrumb [data-back]').click(); await page.locator('.row').waitFor();
   await page.getByRole('button', { name: '本周', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#starsLabel').textContent.startsWith('本周'));
+  await page.waitForFunction(() => document.querySelector('.row .count small')?.textContent === '+1K');
   assert.equal(await page.locator('.count small').first().innerText(), '+1K');
   await page.selectOption('#languageSelect', 'java');
   await page.locator('.state').filter({ hasText: '暂无该语言' }).waitFor();
@@ -81,7 +81,7 @@ test('a pending weekly response cannot overwrite daily after browser Back', asyn
   await page.getByRole('button', { name: '本周', exact: true }).click();
   await page.waitForTimeout(100); await page.goBack({ waitUntil: 'domcontentloaded' });
   await page.locator('.row').waitFor(); release(); await page.waitForTimeout(150);
-  assert.equal(await page.locator('#starsLabel').innerText(), '今日榜单新增 Star');
+  assert.equal(await page.getByRole('button', { name: '今日', exact: true }).getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('.count small').first().innerText(), '+789');
 });
 

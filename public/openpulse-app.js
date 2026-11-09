@@ -41,24 +41,14 @@ function renderRows() {
     return `<article class="row"><a class="row-link" href="${escape(href)}" aria-label="了解 ${escape(repo.fullName)}"></a><span class="rank${index < 3 ? ' top' : ''}">${String(index + 1).padStart(2, '0')}</span><div><div class="repo-title"><a class="owner" href="${profile(owner)}" target="_blank" rel="noreferrer">${escape(owner)}</a><span class="slash">/</span><a href="${escape(href)}"><b>${escape(name)}</b></a></div><p class="repo-desc">${escape(repo.description || '仓库尚未提供项目简介。')}</p><div class="meta"><span class="lang"><i style="background:${colors[repo.language] || '#a4b2c7'}"></i>${escape(repo.language === 'Unknown' ? '未标注语言' : repo.language)}</span></div><div class="authors" data-authors="${escape(repo.fullName)}">${avatars(repo.contributors, repo.contributorsRanked)}</div></div><div class="count" title="${exact(repo.stars)} Star；${windows[activePeriod]}新增 ${exact(repo.growth)}">${compact(repo.stars)}<small>+${compact(repo.growth)}</small></div><div class="count" title="${exact(repo.forks)} Fork">${compact(repo.forks)}</div></article>`;
   }).join('');
 }
-function renderOverview() {
+function renderBoardContext() {
   const repositories = trend.repositories;
-  $('totalStars').textContent = compact(trend.pulse.newStars);
-  $('totalStars').title = exact(trend.pulse.newStars);
-  const totalForks = repositories.reduce((sum, repo) => sum + (repo.forks ?? 0), 0);
-  $('totalForks').textContent = compact(totalForks);
-  $('totalForks').title = `${exact(totalForks)} Fork（当前榜单项目合计）`;
-  $('starsLabel').textContent = `${periodLabels[activePeriod]}榜单新增 Star`;
-  $('projectCount').textContent = repositories.length;
   $('listHeading').textContent = `${repositories.length} 个项目`;
   $('listCount').textContent = `已展示全部 ${repositories.length} 个上榜项目`;
   const langs = [...repositories.reduce((map, repo) => map.set(repo.language, (map.get(repo.language) || 0) + 1), new Map())].sort((a, b) => b[1] - a[1]);
-  $('topLanguage').textContent = langs[0]?.[0] === 'Unknown' ? '未标注语言' : langs[0]?.[0] || '—';
   $('languages').innerHTML = langs.slice(0, 6).map(([language, value]) => `<div class="language-row"><div class="language-label"><span><i style="background:${colors[language] || '#a4b2c7'}"></i>${escape(language === 'Unknown' ? '未标注语言' : language)}</span><span>${Math.round(value / repositories.length * 100)}%</span></div><div class="track"><i style="width:${value / repositories.length * 100}%;background:${colors[language] || '#a4b2c7'}"></i></div></div>`).join('') || '<p class="about">当前筛选暂无数据。</p>';
   $('growthWindow').textContent = periodLabels[activePeriod];
   $('movers').innerHTML = [...repositories].sort((a, b) => b.growth - a.growth).slice(0, 3).map((repo, index) => `<div class="mover"><span class="mover-num">0${index + 1}</span><div><a class="mover-name" href="${escape(routeHash(repo.fullName))}">${escape(repo.fullName)}</a><div class="mover-desc"><span>+${exact(repo.growth)} Star</span>${escape(repo.language)}</div></div></div>`).join('');
-  $('updatedAt').textContent = `${trend.source === 'live' ? '获取于' : '快照时间'} ${date(trend.generatedAt)}`;
-  $('editionDate').textContent = '趋势' + (activePeriod === 'daily' ? '日报' : activePeriod === 'weekly' ? '周报' : '月报') + ' · ' + new Date().toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
   $('sourceLabel').textContent = `数据来源 · GitHub Trending${trend.source === 'live' ? '' : ' 历史快照'}`;
   $('dataNotice').hidden = trend.source === 'live';
   $('dataNotice').textContent = `${trend.notice || ''} 数据时间：${date(trend.generatedAt)}。`;
@@ -93,13 +83,12 @@ async function loadTrending() {
     const data = await api('/api/openpulse/trending?' + new URLSearchParams({ since: period, language }));
     if (request !== homeRequest) return;
     trend = data; trendKey = period + ':' + language;
-    renderRows(); renderOverview();
+    renderRows(); renderBoardContext();
     enrichAuthors(data.repositories, request);
   } catch (error) {
     if (request !== homeRequest) return;
     $('rows').innerHTML = `<div class="state">${escape(error.message)}<br><button class="secondary-link" data-retry="home">重新加载</button></div>`;
-    ['totalStars', 'totalForks', 'projectCount', 'topLanguage'].forEach(id => $(id).textContent = '—');
-    $('listHeading').textContent = ''; $('listCount').textContent = '暂未获取到榜单'; $('updatedAt').textContent = '请求暂不可用'; $('movers').innerHTML = ''; $('languages').innerHTML = '';
+    $('listHeading').textContent = ''; $('listCount').textContent = '暂未获取到榜单'; $('movers').innerHTML = ''; $('languages').innerHTML = '';
   }
 }
 function people(authors) {
@@ -169,7 +158,7 @@ function route() {
     detailRequest++; $('homeView').hidden = false; $('detailView').hidden = true;
     document.title = 'OpenPulse · 开源趋势';
     if (!trend || trendKey !== activePeriod + ':' + activeLanguage) loadTrending();
-    else { renderRows(); renderOverview(); }
+    else { renderRows(); renderBoardContext(); }
     window.scrollTo(0, previousScroll);
   }
 }
