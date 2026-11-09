@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-09-20T00:00:00Z",
+  "window": "daily",
+  "pulse": { "newStars": 8254, "risingRepositories": 13, "activeTopics": 6, "newContributors": 12 },
+  "repositories": [
+    { "fullName": "affaan-m/ECC", "owner": "affaan-m", "language": "JavaScript", "stars": 263440, "forks": 39423, "growth": 1012, "maintainers": ["affaan-m"] },
+    { "fullName": "BuilderIO/agent-native", "owner": "BuilderIO", "language": "TypeScript", "stars": 5063, "forks": 475, "growth": 89, "maintainers": ["BuilderIO"] },
+    { "fullName": "cloudflare/security-audit-skill", "owner": "cloudflare", "language": "JavaScript", "stars": 17663, "forks": 981, "growth": 2375, "maintainers": ["cloudflare"] },
+    { "fullName": "trycua/cua", "owner": "trycua", "language": "HTML", "stars": 24986, "forks": 1714, "growth": 1012, "maintainers": ["trycua"] },
+    { "fullName": "anthropics/financial-services", "owner": "anthropics", "language": "Python", "stars": 35250, "forks": 5240, "growth": 236, "maintainers": ["anthropics"] },
+    { "fullName": "paperless-ngx/paperless-ngx", "owner": "paperless-ngx", "language": "Python", "stars": 45426, "forks": 3137, "growth": 32, "maintainers": ["paperless-ngx"] },
+    { "fullName": "anthropics/claude-code", "owner": "anthropics", "language": "TypeScript", "stars": 146977, "forks": 24012, "growth": 415, "maintainers": ["anthropics"] },
+    { "fullName": "mihail911/modern-software-dev-assignments", "owner": "mihail911", "language": "Python", "stars": 4468, "forks": 1006, "growth": 174, "maintainers": ["mihail911"] },
+    { "fullName": "higgsfield-ai/higgsfield", "owner": "higgsfield-ai", "language": "Jupyter Notebook", "stars": 5222, "forks": 937, "growth": 461, "maintainers": ["higgsfield-ai"] },
+    { "fullName": "Open-Dev-Society/OpenStock", "owner": "Open-Dev-Society", "language": "TypeScript", "stars": 16576, "forks": 2125, "growth": 752, "maintainers": ["Open-Dev-Society"] },
+    { "fullName": "coder/coder", "owner": "coder", "language": "Go", "stars": 15880, "forks": 1535, "growth": 382, "maintainers": ["coder"] },
+    { "fullName": "vercel-labs/json-render", "owner": "vercel-labs", "language": "TypeScript", "stars": 17098, "forks": 910, "growth": 585, "maintainers": ["vercel-labs"] },
+    { "fullName": "addyosmani/agent-skills", "owner": "addyosmani", "language": "JavaScript", "stars": 97498, "forks": 10284, "growth": 729, "maintainers": ["addyosmani"] }
+  ]
+}

@@ -1,71 +1,41 @@
-# GitHub Trending
+# OpenPulse · GitHub 开源趋势
 
-一个使用 Next.js 构建的 GitHub Trending 项目，用于展示 GitHub 上最热门的仓库和开发者。
+公开浏览 GitHub 日／周／月榜，按语言筛选项目，查看仓库详情、最多五位贡献作者与原仓库链接。列表展示 Star 总量及增量、Fork 总量；顶部 Fork 指标合计当前榜单项目。无需账号登录。
 
-## 功能特点
+## 本地运行
 
-- 📊 展示 GitHub 热门仓库
-- 👥 展示 GitHub 热门开发者
-- 🔍 支持按语言筛选
-- 📱 响应式设计，支持移动端
-- 🌙 支持深色模式
-- ⚡ 使用 Next.js App Router 构建
-- 🎨 使用 Tailwind CSS 构建现代化 UI
+推荐 Node.js 24+。如访问 GitHub 需要系统代理，使用 `NODE_USE_ENV_PROXY=1` 让 Node 读取 HTTP(S)_PROXY。
 
-## 技术栈
-
-- [Next.js 14](https://nextjs.org/) - React 框架
-- [TypeScript](https://www.typescriptlang.org/) - 类型安全
-- [Tailwind CSS](https://tailwindcss.com/) - 样式框架
-- [SWR](https://swr.vercel.app/) - 数据获取
-- [Vercel](https://vercel.com) - 部署平台
-
-## 开始使用
-
-1. 克隆项目
-
-```bash
-git clone https://github.com/yourusername/github-trending.git
-cd github-trending
+```sh
+npm ci
+NODE_USE_ENV_PROXY=1 npm run dev
 ```
 
-2. 安装依赖
+打开 [http://localhost:3000](http://localhost:3000)。生产验证使用 `npm run build` 和 `npm run start`。
 
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
+## 项目解读
+
+详情提供 README 节选和原文、版本、文档与示例入口。本地运行 Ollama 时还可点击「生成解读」：模型从公开资料整理用途、适用场景、上手方式和限制，输出带来源链接。
+
+```sh
+ollama pull qwen2.5:1.5b
 ```
 
-3. 运行开发服务器
+本地服务使用 `127.0.0.1:11434`，默认模型为 `qwen2.5:1.5b`。可用 `OPENPULSE_AI_MODEL` 选择已安装的模型，设为空关闭 AI。Vercel 环境不调用本机模型，仍可浏览 README 与来源。可选的 `GITHUB_PUBLIC_TOKEN` 只用于读取公开仓库资料，请保留在服务端环境变量中。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+## 数据与验证
+
+首页使用 `/api/openpulse/*`，旧的 `/api/trending` 接口保持原样。实时趋势失败时优先使用相同时间和语言的快照，并显示来源与日期。运行快照保存在系统临时目录，不纳入版本管理。
+
+```sh
+node --test tests/openpulse-data.test.mjs tests/openpulse-summary.test.mjs
+npm run build
 ```
 
-4. 打开 [http://localhost:3000](http://localhost:3000) 查看结果
+若有 Playwright，可在运行服务后验证浏览器交互：
 
-## 项目结构
-
+```sh
+OPENPULSE_TEST_ORIGIN=http://localhost:3000 \
+OPENPULSE_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+node --test tests/openpulse-ui.test.mjs
 ```
-github-trending/
-├── app/                # Next.js App Router 目录
-├── components/         # React 组件
-├── lib/               # 工具函数和 API
-├── public/            # 静态资源
-└── styles/            # 全局样式
-```
-
-## 贡献指南
-
-欢迎提交 Pull Request 或创建 Issue 来帮助改进项目。
-
-## 许可证
-
-MIT License

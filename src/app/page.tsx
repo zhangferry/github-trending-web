@@ -1,10 +1,17 @@
-import TrendingRepos from './components/TrendingRepos';
+import Script from "next/script";
+import "./openpulse.css";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#161b22] text-[#f0f6fc] p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">GitHub Trending</h1>
-      <TrendingRepos />
-    </main>
+    <>
+      <header><div className="header-inner"><a className="brand" href="#"><svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><path d="M3 18h6l4-11 5 17 4-12 2 6h4" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/></svg>OpenPulse<span style={{ fontSize: "10px", letterSpacing: "0", color: "#9aa6b7" }}>BETA</span></a><nav className="toplinks"><span>开源趋势</span></nav></div></header>
+      <main id="homeView"><div className="eyebrow">THE OPEN SOURCE PULSE</div><section className="intro"><div><h1>找到下一个，值得关注的项目。</h1><p>跟随开发者的选择，看见开源世界正在发生什么。</p></div><div className="edition"><strong id="editionDate"></strong><span id="updatedAt">正在获取趋势榜单</span></div></section>
+      <div className="notice" id="dataNotice" hidden role="status"></div>
+      <section className="overview" aria-label="趋势概览"><div className="stat"><div className="stat-label" id="starsLabel">榜单新增 Star</div><div className="stat-value" id="totalStars">—</div></div><div className="stat"><div className="stat-label">榜单项目 Fork 总数</div><div className="stat-value" id="totalForks">—</div></div><div className="stat"><div className="stat-label">上榜项目</div><div className="stat-value"><span id="projectCount">—</span><em>个项目正在升温</em></div></div><div className="stat"><div className="stat-label">最活跃语言</div><div className="stat-value" id="topLanguage" style={{ fontSize: "23px" }}>—</div></div></section>
+      <div className="workspace"><section className="panel"><div className="list-head"><h2>趋势榜单 <small id="listHeading"></small></h2><div className="periods"><button className="active" data-period="daily">今日</button><button data-period="weekly">本周</button><button data-period="monthly">本月</button></div></div><div className="filter-bar" id="filters"><button className="chip active" data-language="">全部语言</button><button className="chip" data-language="typescript">TypeScript</button><button className="chip" data-language="python">Python</button><button className="chip" data-language="rust">Rust</button><button className="chip" data-language="go">Go</button><select id="languageSelect" aria-label="选择其他编程语言"><option value="">更多语言 ↓</option><option value="javascript">JavaScript</option><option value="java">Java</option><option value="c">C</option><option value="c++">C++</option><option value="c#">C#</option><option value="ruby">Ruby</option><option value="php">PHP</option><option value="swift">Swift</option><option value="kotlin">Kotlin</option><option value="dart">Dart</option><option value="scala">Scala</option><option value="shell">Shell</option><option value="jupyter notebook">Jupyter Notebook</option><option value="html">HTML</option><option value="css">CSS</option><option value="vue">Vue</option><option value="svelte">Svelte</option><option value="elixir">Elixir</option><option value="haskell">Haskell</option><option value="lua">Lua</option><option value="r">R</option><option value="zig">Zig</option><option value="clojure">Clojure</option><option value="objective-c">Objective-C</option></select></div><div className="column-head"><span>#</span><span>项目 / 简介</span><span>Star / 新增</span><span>Fork 总数</span></div><div id="rows"><div className="state" aria-busy="true">正在读取 GitHub 趋势…</div></div><div className="list-bottom"><span id="listCount"></span><a id="upstreamLink" href="https://github.com/trending" target="_blank" rel="noreferrer">在 GitHub 查看榜单 ↗</a></div></section>
+      <aside><section><h2 className="aside-title">语言热度<span>当前榜单项目占比</span></h2><div id="languages"></div></section><hr className="aside-divider" /><section><h2 className="aside-title">Star 增长领先<span id="growthWindow">今日</span></h2><div id="movers"></div></section></aside></div><footer><span>OpenPulse © 2026 · 让好的开源项目被看见。</span><span id="sourceLabel">数据来源 · GitHub Trending</span></footer></main>
+      <main className="detail-main" id="detailView" hidden></main>
+      <Script src="/openpulse-app.js" strategy="afterInteractive" type="module" />
+    </>
   );
 }
